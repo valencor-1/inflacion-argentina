@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
 from pages.ipc import mostrar_ipc
-from pages.salarios import mostrar_salarios
-from pages.pobreza import mostrar_pobreza
+
 
 
 
