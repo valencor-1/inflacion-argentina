@@ -33,9 +33,6 @@ def mostrar_ipc():
 
     
 
-    
-    
-
     if indicador == "acumulada durante el anio":
 
       df_filtrado = df[
@@ -90,6 +87,34 @@ def mostrar_ipc():
         fig = grafico_ipc(df_filtrado)
         st.plotly_chart(fig)
 
+  if indicador == "Interanual":
+    col1, col2 = st.columns(2)
+
+    with col1:
+        mes = st.selectbox("Mes", range(1, 13))
+
+    with col2:
+        anio = st.selectbox("Año", range(2020, date.today().year + 1))
+
+    fecha_actual = date(anio, mes, 1)
+    fecha_anterior = date(anio - 1, mes, 1)
+
+    df_actual = df[df["fecha"] == pd.to_datetime(fecha_actual)]
+    df_anterior = df[df["fecha"] == pd.to_datetime(fecha_anterior)]
+
+    if df_actual.empty or df_anterior.empty:
+        st.warning("No hay datos suficientes")
+        return
+
+    valor_actual = df_actual["valor"].iloc[0]
+    valor_anterior = df_anterior["valor"].iloc[0]
+
+    inflacion_interanual = ((valor_actual / valor_anterior) - 1) * 100
+
+    st.metric("Inflación interanual", f"{inflacion_interanual:.2f}%", "Mide la inflación de un mes con el mismo mes del año anterior")
+    fig = grafico_ipc(df)
+    st.plotly_chart(fig)
+
   if indicador == "Mensual":
     col1, col2 = st.columns(2)
 
@@ -109,7 +134,7 @@ def mostrar_ipc():
 
     desde_final = date(anio, mes, 1)
 
-    # 🔥 calcular mes anterior correctamente
+
     if mes == 1:
         mes_anterior = date(anio - 1, 12, 1)
     else:
