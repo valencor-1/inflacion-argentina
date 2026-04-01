@@ -29,7 +29,10 @@ def mostrar_ipc():
        desde = st.date_input("Desde", value=date(2026, 1,1))
     
     with col2:
-      hasta = st.date_input("Hasta", value = max_fecha, max_value= max_fecha, min_value= max_fecha)
+      if indicador == "acumulada durante el anio":
+       hasta = st.date_input("Hasta", value = max_fecha, max_value= max_fecha, min_value= max_fecha)
+      else:
+        hasta = st.date_input("Hasta", value = max_fecha, min_value= desde)
 
     
 
@@ -74,18 +77,22 @@ def mostrar_ipc():
             (df["fecha"] <= pd.to_datetime(hasta))
         ]
       
+
+      
       if df_filtrado.empty:
         st.warning("no hay datos en ese rango") 
         
       else:
         st.write("Datos filtrados:", len(df_filtrado))
-
+        
         inflacion_total = (
         (df_filtrado["valor"].iloc[-1] / df_filtrado["valor"].iloc[0]) - 1) * 100
         
         st.metric("Inflación acumulada", f"{inflacion_total:.2f}%")
         fig = grafico_ipc(df_filtrado)
         st.plotly_chart(fig)
+
+        st.write("Datos filtrados:", df_filtrado)
 
   if indicador == "Interanual":
     col1, col2 = st.columns(2)
@@ -111,19 +118,22 @@ def mostrar_ipc():
 
     inflacion_interanual = ((valor_actual / valor_anterior) - 1) * 100
 
-    st.metric("Inflación interanual", f"{inflacion_interanual:.2f}%", "Mide la inflación de un mes con el mismo mes del año anterior")
-    fig = grafico_ipc(df)
-    st.plotly_chart(fig)
-
+    st.metric("Inflación interanual", f"{inflacion_interanual:.2f}%", help="Mide la inflación de un mes con el mismo mes del año anterior", delta=" " if inflacion_interanual > 0 else "- ", # Un espacio con signo engaña al motor visual
+    delta_color="normal")
+    
   if indicador == "Mensual":
     col1, col2 = st.columns(2)
 
     with col1:
-        mes = st.selectbox(
-            "Mes",
-            range(1, 13),
-            format_func=lambda x: date(2024, x, 1).strftime('%B')
-        )
+
+      meses = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"  ]
+      mes = st.selectbox(
+          "Mes",
+          range(1, 13),
+          format_func=lambda x: meses[x-1]
+      )
 
     with col2:
         anio = st.selectbox(
@@ -156,8 +166,7 @@ def mostrar_ipc():
 
     st.metric("Inflación mensual", f"{inflacion_mensual:.2f}%")
 
-    fig = grafico_ipc(df)
-    st.plotly_chart(fig)
+    
 
   
 
