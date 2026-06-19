@@ -12,3 +12,7 @@ def ipc_interanual(df):
 def acumulada_en_el_anio(df):
     df["año"] = df["fecha"].dt.year
     df["inflacion_acumulada"] = df.groupby("año")["ipc"].pct_change().cumsum() * 100
+
+def calcular_salarios(df):
+    df["variacion_mensual_del_salario"] = df["valor"].pct_change() * 100
+    return df
